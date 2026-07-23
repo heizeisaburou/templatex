@@ -3,6 +3,7 @@ package ranges
 import "fmt"
 
 // TODO: Documentar funciones
+// TODO: Asegurarse de que se accede siempre a copias de los datos
 
 type Index interface {
 	~int

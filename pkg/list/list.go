@@ -2,8 +2,9 @@ package list
 
 import "fmt"
 
-// TODO: Documentar funciones
 // TODO: Crear String()
+// TODO: Asegurarse de que se accede siempre a copias de los datos
+// TODO: Documentar funciones
 
 type Index interface {
 	~int
@@ -88,7 +89,7 @@ func (l List[I, T]) Range(start, end I) []T {
 }
 
 func (l List[I, T]) Slice() []T {
-	return l.items
+	return append([]T(nil), l.items...)
 }
 
 func (l List[I, T]) Len() I {
