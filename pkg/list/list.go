@@ -1,8 +1,11 @@
 package list
 
-import "fmt"
+import (
+	"fmt"
+	"reflect"
+	"strings"
+)
 
-// TODO: Crear String()
 // TODO: Asegurarse de que se accede siempre a copias de los datos
 // TODO: Documentar funciones
 
@@ -15,6 +18,7 @@ type List[I Index, T any] struct {
 }
 
 func New[I Index, T any](items ...T) List[I, T] {
+
 	return List[I, T]{
 		items: append([]T(nil), items...),
 	}
@@ -80,12 +84,17 @@ func (l List[I, T]) MustAt(id I) T {
 	return item
 }
 
+// This function was revised________________________________
 func (l List[I, T]) Range(start, end I) []T {
 	if start < 0 || end < start || int(end) > len(l.items) {
 		panic(fmt.Sprintf("invalid list range: %d:%d", start, end))
 	}
 
-	return l.items[start:end]
+	dest := make([]T, end-start)
+
+	copy(dest, l.items[start:end])
+
+	return dest
 }
 
 func (l List[I, T]) Slice() []T {
@@ -104,3 +113,39 @@ func (l List[I, T]) NextID() I {
 	return I(len(l.items))
 }
 
+func (l List[I, T]) String() string {
+	var b strings.Builder
+
+	b.WriteString("{")
+
+	for i, item := range l.items {
+		if i > 0 {
+			b.WriteString(", ") // Adds a comma only between elements, avoiding trailing commas
+		}
+		// Safely formats any generic type T and writes directly to the builder buffer
+		fmt.Fprint(&b, item)
+	}
+
+	b.WriteString("}")
+
+	return b.String()
+}
+
+func (l List[I, T]) GoString() string {
+	var b strings.Builder
+	structName := reflect.TypeFor[List[I, T]]().String()
+	b.WriteString(structName)
+	b.WriteString("{")
+
+	for i, item := range l.items {
+		if i > 0 {
+			b.WriteString(", ") // Adds a comma only between elements, avoiding trailing commas
+		}
+		// Safely formats any generic type T and writes directly to the builder buffer
+		fmt.Fprint(&b, item)
+	}
+
+	b.WriteString("}")
+
+	return b.String()
+}
