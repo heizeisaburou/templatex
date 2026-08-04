@@ -13,3 +13,14 @@ func (o ByteOffset) Compare(other ByteOffset) int {
 		return 0
 	}
 }
+
+func (o ByteOffset) Clamp(end ByteOffset) ByteOffset {
+	if o < 0 {
+		return 0
+	}
+	if o > end {
+		return end
+	}
+
+	return o
+}

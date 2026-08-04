@@ -8,6 +8,9 @@ type Position struct {
 	col  int
 }
 
+// ByteOffset
+// En la linea X columna X pasa X
+
 func NewPosition(line int, col int) Position {
 	if line < 0 || col < 0 {
 		panic(fmt.Sprintf("invalid position: %d:%d", line, col))
