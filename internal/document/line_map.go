@@ -2,6 +2,7 @@ package document
 
 import (
 	"unicode/utf8"
+	"github.com/heizeisaburou/templatex/internal/clamp"
 )
 
 type lineMap struct {
@@ -28,7 +29,7 @@ func newLineMap(src []byte) lineMap {
 // Los ByteOffset situados fuera de los límites del documento se ajustan al rango válido.
 func (m lineMap) toPosition(src []byte, offset ByteOffset) Position {
   ln := ByteOffset(len(src))
-  offset = offset.Clamp(ln)
+  offset = clamp.ClampPosition(ln, offset)
 
 	line := 0
 
