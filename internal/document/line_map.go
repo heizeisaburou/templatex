@@ -7,12 +7,14 @@ import (
 
 type lineMap struct {
 	lineStarts []int
+	src []byte
 }
 
 // newLineMap construye el mapa de posiciones de un documento fuente inmutable.
 func newLineMap(src []byte) lineMap {
 	lm := lineMap{
 		lineStarts: []int{0},
+		src: src,
 	}
 
 	for i, b := range src {
@@ -27,8 +29,8 @@ func newLineMap(src []byte) lineMap {
 // toPosition convierte un ByteOffset en una posición dentro del documento.
 //
 // Los ByteOffset situados fuera de los límites del documento se ajustan al rango válido.
-func (m lineMap) toPosition(src []byte, offset ByteOffset) Position {
-  ln := ByteOffset(len(src))
+func (m lineMap) toPosition(offset ByteOffset) Position {
+  ln := ByteOffset(len(m.src))
   offset = clamp.ClampPosition(ln, offset)
 
 	line := 0
@@ -52,7 +54,7 @@ func (m lineMap) toPosition(src []byte, offset ByteOffset) Position {
 	//  línea o una caché pequeña.
 	col := 0
 	for pos := ByteOffset(m.lineStarts[line]); pos < offset; col++ {
-		_, sz := utf8.DecodeRune(src[pos:offset])
+		_, sz := utf8.DecodeRune(m.src[pos:offset])
 		pos += ByteOffset(sz)
 	}
 
@@ -63,9 +65,9 @@ func (m lineMap) toPosition(src []byte, offset ByteOffset) Position {
 // documento.
 //
 // Los offsets situados fuera de los límites del documento se ajustan al rango válido.
-func (m lineMap) toRegion(src []byte, r Range) Region {
+func (m lineMap) toRegion(r Range) Region {
 	return NewRegion(
-		m.toPosition(src, r.Start()),
-		m.toPosition(src, r.End()),
+		m.toPosition(r.Start()),
+		m.toPosition(r.End()),
 	)
 }
