@@ -76,6 +76,21 @@ func TestNewAt(t *testing.T) {
 	}
 }
 
+func TestNewAtOutOfRange(t *testing.T) {
+	src := []byte{'a', 'b', 'c'}
+
+	_, err := NewAt(src, len(src)+1)
+	if !errors.Is(err, ErrPositionOutOfRange) {
+		t.Fatalf(
+			"NewAt(%q, %d) error = %v, want %v",
+			src,
+			len(src)+1,
+			err,
+			ErrPositionOutOfRange,
+		)
+	}
+}
+
 func TestCursorLen(t *testing.T) {
 	tests := []struct {
 		name string
@@ -221,6 +236,8 @@ func TestCursorNext(t *testing.T) {
 		},
 		{
 			name:   "EOF",
+			src:    []byte{'a'},
+			pos:    1,
 			wantOk: false,
 		},
 	}
@@ -250,52 +267,155 @@ func TestCursorNext(t *testing.T) {
 }
 
 func TestCursorSeek(t *testing.T) {
-	src := []byte{'a', 'b', 'c'}
-
-	cur := New[byte, int](src)
-
-	pos := 0
-	if err := cur.Seek(pos); err != nil {
-		t.Fatalf("cur.Seek(%d) unexpected error: %v", pos, err)
-	}
-
-	if got, want := cur.Pos(), pos; got != want {
-		t.Errorf("cur.Pos(%d) = %d; want %d", pos, got, want)
-	}
-}
-
-func TestCursorSeekComplete(t *testing.T) {
 	tests := []struct {
-		name        string
-		src         []byte
-		wantPos     int
-		shouldError bool
+		name    string
+		src     []byte
+		seek    int
+		wantErr bool
 	}{
+		{name: "empty sequence, to EOF"},
 		{name: "available element", src: []byte{'a'}},
-		{name: "empty sequence"},
-		{name: "EOF", src: []byte{'a', 'b', 'c'}, wantPos: 3},
+		{name: "to EOF", src: []byte{'a', 'b', 'c'}, seek: 3},
+		{
+			name:    "negative position",
+			src:     []byte{'a', 'b', 'c'},
+			seek:    -1,
+			wantErr: true,
+		},
+		{
+			name:    "beyond EOF",
+			src:     []byte{'a', 'b', 'c'},
+			seek:    4,
+			wantErr: true,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cur, gotErr := NewAt(tt.src, tt.wantPos)
-			if gotErr != nil {
-				t.Fatalf("NewAt(%q, %d): %v", tt.src, tt.wantPos, gotErr)
-			}
+			cur := New[byte, int](tt.src)
 
-			var wantErr error
-			if tt.shouldError {
-				wantErr = ErrPositionOutOfRange
-			}
+			err := cur.Seek(tt.seek)
 
-			if gotErr = cur.Seek(tt.wantPos); !errors.Is(gotErr, wantErr) {
-				t.Fatalf("cur.Seek(%d) error = %v, want %v", tt.wantPos, gotErr, wantErr)
-			}
-
-			if !tt.shouldError {
-				if gotPos := cur.Pos(); gotPos != tt.wantPos {
-					t.Errorf("cur.Pos() = %d, want %d", gotPos, tt.wantPos)
+			if tt.wantErr {
+				if !errors.Is(err, ErrPositionOutOfRange) {
+					t.Fatalf(
+						"cur.Seek(%d) error = %v, want %v",
+						tt.seek,
+						err,
+						ErrPositionOutOfRange,
+					)
 				}
+
+				if got, want := cur.Pos(), 0; got != want {
+					t.Fatalf(
+						"cur.Pos() = %d, want %d; cursor should stay unchanged after error",
+						got,
+						want,
+					)
+				}
+
+				return
+			}
+
+			if err != nil {
+				t.Fatalf("cur.Seek(%d) unexpected error: %v", tt.seek, err)
+			}
+
+			if got, want := cur.Pos(), tt.seek; got != want {
+				t.Fatalf("cur.Pos() = %d, want %d", got, want)
+			}
+		})
+	}
+}
+
+func TestCursorMove(t *testing.T) {
+	tests := []struct {
+		name    string
+		src     []byte
+		pos     int
+		delta   int
+		wantPos int
+		wantErr bool
+	}{
+		{name: "forward", src: []byte{'a', 'b', 'c'}, delta: 2, wantPos: 2},
+		{
+			name:    "backward",
+			src:     []byte{'a', 'b', 'c'},
+			pos:     2,
+			delta:   -2,
+			wantPos: 0,
+		},
+		{
+			name:    "zero delta",
+			src:     []byte{'a', 'b', 'c'},
+			pos:     1,
+			delta:   0,
+			wantPos: 1,
+		},
+		{
+			name:    "to EOF",
+			src:     []byte{'a', 'b', 'c'},
+			delta:   3,
+			wantPos: 3,
+		},
+		{
+			name:    "from EOF to start",
+			src:     []byte{'a', 'b', 'c'},
+			pos:     3,
+			delta:   -3,
+			wantPos: 0,
+		},
+		{
+			name:    "beyond EOF",
+			src:     []byte{'a', 'b', 'c'},
+			delta:   4,
+			wantErr: true,
+		},
+		{
+			name:    "before start",
+			src:     []byte{'a', 'b', 'c'},
+			pos:     1,
+			delta:   -2,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cur, err := NewAt(tt.src, tt.pos)
+			if err != nil {
+				t.Fatalf("NewAt(%q, %d): %v", tt.src, tt.pos, err)
+			}
+
+			err = cur.Move(tt.delta)
+
+			if tt.wantErr {
+				if !errors.Is(err, ErrPositionOutOfRange) {
+					t.Fatalf(
+						"cur.Move(%d) error = %v, want %v",
+						tt.delta,
+						err,
+						ErrPositionOutOfRange,
+					)
+				}
+
+				if got := cur.Pos(); got != tt.pos {
+					t.Fatalf(
+						"cur.Pos() = %d, want %d; cursor should stay unchanged after error",
+						got,
+						tt.pos,
+					)
+				}
+
+				return
+			}
+
+			if err != nil {
+				t.Fatalf("cur.Move(%d) unexpected error: %v", tt.delta, err)
+			}
+
+			if got := cur.Pos(); got != tt.wantPos {
+				t.Fatalf("cur.Pos() = %d, want %d", got, tt.wantPos)
 			}
 		})
 	}
