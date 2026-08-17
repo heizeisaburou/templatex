@@ -5,6 +5,11 @@ import (
 	"fmt"
 )
 
+// :TODO: Next debería separarse en Next simplemente avanzar y PeekNext.
+// :TODO:   Actualizar por tanto los tests.
+// :TODO: Terminar de documentar las funciones
+// :TODO: Pasar la IA a cursor_test.go para asegurarse de que esté pulido.
+
 type Index interface {
 	~int
 }
