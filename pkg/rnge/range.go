@@ -2,7 +2,6 @@ package rnge
 
 import (
 	"fmt"
-	"reflect"
 )
 
 // Ordered representa un valor que puede compararse con otro del mismo tipo.
@@ -115,6 +114,5 @@ func (r Range[I]) String() string {
 // GoString devuelve una representación explícita del tipo y sus campos.
 // Se utiliza al formatear el rango mediante %#v.
 func (r Range[I]) GoString() string {
-	structName := reflect.TypeFor[Range[I]]().String()
-	return fmt.Sprintf("%s{start: %v, end: %v}", structName, r.start, r.end)
+	return fmt.Sprintf("%T{start: %v, end: %v}", r, r.start, r.end)
 }
