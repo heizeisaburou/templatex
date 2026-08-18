@@ -5,11 +5,6 @@ import (
 	"fmt"
 )
 
-// :TODO: Next debería separarse en Next simplemente avanzar y PeekNext.
-// :TODO:   Actualizar por tanto los tests.
-// :TODO: Terminar de documentar las funciones
-// :TODO: Pasar la IA a cursor_test.go para asegurarse de que esté pulido.
-
 type Index interface {
 	~int
 }
@@ -26,31 +21,34 @@ type Cursor[T any, I Index] struct {
 var ErrPositionOutOfRange = errors.New("cursor: position out of range")
 
 // New crea un cursor situado al principio de src.
-func New[T any, I Index](src []T) Cursor[T, I] {
-	return Cursor[T, I]{src: src}
+func New[T any, I Index](src []T) *Cursor[T, I] {
+	return &Cursor[T, I]{src: src}
 }
 
 // NewAt crea un cursor situado en position.
 //
 // Devuelve ErrPositionOutOfRange cuando position no pertenece al intervalo
 // [0, len(src)].
-func NewAt[T any, I Index](src []T, position I) (Cursor[T, I], error) {
+func NewAt[T any, I Index](src []T, position I) (*Cursor[T, I], error) {
 	c := New[T, I](src)
 	if err := c.Seek(position); err != nil {
-		return Cursor[T, I]{}, err
+		return &Cursor[T, I]{}, err
 	}
 
 	return c, nil
 }
 
+// Len devuelve la longitud del documento que recorre el cursor
 func (c Cursor[T, I]) Len() I {
 	return I(len(c.src))
 }
 
+// Len devuelve la posición actual del cursor
 func (c Cursor[T, I]) Pos() I {
 	return c.offset
 }
 
+// EOF devuelve true si se ha alcanzado el final del documento
 func (c Cursor[T, I]) EOF() bool {
 	return c.offset >= c.Len()
 }
