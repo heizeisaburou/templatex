@@ -38,14 +38,17 @@ func NewAt[T any, I Index](src []T, position I) (*Cursor[T, I], error) {
 	return c, nil
 }
 
+// Len devuelve la longitud del documento que recorre el cursor
 func (c Cursor[T, I]) Len() I {
 	return I(len(c.src))
 }
 
+// Len devuelve la posición actual del cursor
 func (c Cursor[T, I]) Pos() I {
 	return c.offset
 }
 
+// EOF devuelve true si se ha alcanzado el final del documento
 func (c Cursor[T, I]) EOF() bool {
 	return c.offset >= c.Len()
 }

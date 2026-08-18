@@ -212,6 +212,14 @@ func TestCursorPeek(t *testing.T) {
 					tt.wantValue,
 				)
 			}
+
+			if got, want := cur.Pos(), tt.pos; got != want {
+				t.Errorf(
+					"cur.Pos() = %d, want %d; Peek() must not move the cursor",
+					got,
+					want,
+				)
+			}
 		})
 	}
 }
@@ -223,22 +231,25 @@ func TestCursorNext(t *testing.T) {
 		pos       int
 		wantValue byte
 		wantOk    bool
+		wantPos   int
 	}{
 		{
 			name:      "available element",
 			src:       []byte{'a'},
 			wantValue: 'a',
 			wantOk:    true,
+			wantPos:   1,
 		},
 		{
 			name:   "empty sequence",
 			wantOk: false,
 		},
 		{
-			name:   "EOF",
-			src:    []byte{'a'},
-			pos:    1,
-			wantOk: false,
+			name:    "EOF",
+			src:     []byte{'a'},
+			pos:     1,
+			wantOk:  false,
+			wantPos: 1,
 		},
 	}
 
@@ -252,17 +263,57 @@ func TestCursorNext(t *testing.T) {
 			gotValue, gotOk := cur.Next()
 
 			if gotOk != tt.wantOk {
-				t.Fatalf("cur.Peek() ok = %t, want %t", gotOk, tt.wantOk)
+				t.Fatalf("cur.Next() ok = %t, want %t", gotOk, tt.wantOk)
 			}
 
 			if gotOk && gotValue != tt.wantValue {
 				t.Errorf(
-					"cur.Peek() value = %q, want %q",
+					"cur.Next() value = %q, want %q",
 					gotValue,
 					tt.wantValue,
 				)
 			}
+
+			if got, want := cur.Pos(), tt.wantPos; got != want {
+				t.Errorf(
+					"cur.Pos() = %d, want %d; Next() should advance exactly one position on success and stay unchanged on failure",
+					got,
+					want,
+				)
+			}
 		})
+	}
+}
+
+// TestCursorNextSequence recorre toda la secuencia con llamadas sucesivas a
+// Next(), que es el patrón de uso real de un cursor dentro de un lexer.
+// Comprueba que la posición avanza de una en una y en el orden correcto, y
+// que al llegar a EOF Next() deja de devolver elementos.
+func TestCursorNextSequence(t *testing.T) {
+	src := []byte{'a', 'b', 'c'}
+	cur := New[byte, int](src)
+
+	for i, want := range src {
+		got, ok := cur.Next()
+		if !ok {
+			t.Fatalf("cur.Next() ok = false at step %d, want true", i)
+		}
+
+		if got != want {
+			t.Fatalf("cur.Next() = %q at step %d, want %q", got, i, want)
+		}
+
+		if gotPos, wantPos := cur.Pos(), i+1; gotPos != wantPos {
+			t.Fatalf("cur.Pos() = %d at step %d, want %d", gotPos, i, wantPos)
+		}
+	}
+
+	if !cur.EOF() {
+		t.Fatalf("cur.EOF() = false after consuming src, want true")
+	}
+
+	if _, ok := cur.Next(); ok {
+		t.Fatalf("cur.Next() ok = true after EOF, want false")
 	}
 }
 
