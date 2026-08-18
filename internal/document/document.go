@@ -5,8 +5,6 @@ import (
 	"unicode/utf8"
 )
 
-// :TODO: hacer un test para comprobar que todo en linemap a partir del toPosistion funcione correctamente.
-
 type Document struct {
 	lm  lineMap
 	src []byte
