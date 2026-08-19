@@ -64,7 +64,7 @@ func (r Region) Empty() bool {
 
 // Bounds devuelve el rango como una "tupla" de dos elementos individuales.
 func (r Region) Bounds() (start, end Position) {
-	return r.Bounds()
+	return r.rng.Bounds()
 }
 
 // Array devuelve el rango como un array de dos elementos.
