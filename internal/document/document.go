@@ -2,7 +2,6 @@ package document
 
 import (
 	"errors"
-	"fmt"
 	"unicode/utf8"
 )
 
@@ -43,18 +42,4 @@ func (d Document) ToRegion(r Range) (Region, error) {
 // Len devuelve la longitud del documento
 func (d Document) Len() ByteOffset {
 	return ByteOffset(len(d.src))
-}
-
-// Slice devuelve un trozo del documento
-//
-// Devuelve ErrOutOfBounds si el rango está fuera de los límites del documento
-func (d Document) Slice(rng Range) ([]byte, error) {
-	start := rng.Start()
-	end := rng.End()
-
-	if start < 0 || end > d.Len() {
-		return nil, fmt.Errorf("%w (%v, document.Len() = %d)", ErrOutOfBounds, rng, d.Len())
-	}
-
-	return d.src[start:end], nil
 }
