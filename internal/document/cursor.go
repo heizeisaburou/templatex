@@ -28,7 +28,7 @@ func (c Cursor) Len() ByteOffset {
 
 // Len devuelve la posición actual del cursor
 func (c Cursor) Pos() ByteOffset {
-	return c.Pos()
+	return c.cur.Pos()
 }
 
 // EOF devuelve true si se ha alcanzado el final del documento
