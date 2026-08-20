@@ -1,7 +1,9 @@
 package document
 
 import (
+	"bytes"
 	"errors"
+	"fmt"
 	"unicode/utf8"
 )
 
@@ -15,6 +17,7 @@ var (
 	ErrOutOfBounds = errors.New("El rango especificado está fuera de los límites del documento")
 )
 
+// New este el el constructor para documentos
 // New construye un documento a partir de un []byte
 func New(src []byte) (Document, error) {
 	if !utf8.Valid(src) {
@@ -42,4 +45,22 @@ func (d Document) ToRegion(r Range) (Region, error) {
 // Len devuelve la longitud del documento
 func (d Document) Len() ByteOffset {
 	return ByteOffset(len(d.src))
+}
+
+// Slice retorna una copia independiente de la región solicitada.
+func (d Document) Slice(rng Range) ([]byte, error) {
+	start := rng.Start()
+	end := rng.End()
+
+	if start < 0 || end > d.Len() {
+		return nil, fmt.Errorf(
+			"%w [range = %v, document.Len() = %d]",
+			ErrOutOfBounds,
+			rng,
+			d.Len(),
+		)
+	}
+
+	subSlice := d.src[start:end]
+	return bytes.Clone(subSlice), nil
 }
