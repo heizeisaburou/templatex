@@ -14,7 +14,6 @@ type Document struct {
 
 var (
 	ErrInvalidUTF8 = errors.New("La secuencia utf8 no es valida")
-	ErrOutOfBounds = errors.New("Indice fuera de los limites del documento")
 	ErrOutOfBounds = errors.New("El rango especificado está fuera de los límites del documento")
 )
 
