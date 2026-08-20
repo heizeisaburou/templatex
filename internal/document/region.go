@@ -10,6 +10,6 @@ type Region struct {
 // NewRegion crea la región semiabierta [start, end).
 func NewRegion(start, end Position) Region {
 	return Region{
-		Range: rnge.NewCompare(start, end, Position.Compare),
+		Range: rnge.New(start, end),
 	}
 }

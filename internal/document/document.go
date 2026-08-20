@@ -1,7 +1,9 @@
 package document
 
 import (
+	"bytes"
 	"errors"
+	"fmt"
 	"unicode/utf8"
 )
 
@@ -12,8 +14,10 @@ type Document struct {
 
 var (
 	ErrInvalidUTF8 = errors.New("La secuencia utf8 no es valida")
+	ErrOutOfBounds = errors.New("Indice fuera de los limites del documento")
 )
 
+// New este el el constructor para documentos
 func New(src []byte) (Document, error) {
 	if !utf8.Valid(src) {
 		return Document{}, ErrInvalidUTF8
@@ -39,4 +43,22 @@ func (d Document) ToRegion(r Range) (Region, error) {
 
 func (d Document) Len() ByteOffset {
 	return ByteOffset(len(d.src))
+}
+
+// Slice retorna una copia independiente de la región solicitada.
+func (d Document) Slice(rng Range) ([]byte, error) {
+	start := rng.Start()
+	end := rng.End()
+
+	if start < 0 || end > d.Len() {
+		return nil, fmt.Errorf(
+			"%w [range = %v, document.Len() = %d]",
+			ErrOutOfBounds,
+			rng,
+			d.Len(),
+		)
+	}
+
+	subSlice := d.src[start:end]
+	return bytes.Clone(subSlice), nil
 }

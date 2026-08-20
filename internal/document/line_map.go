@@ -4,7 +4,7 @@ import (
 	"errors"
 	"unicode/utf8"
 
-	"github.com/heizeisaburou/templatex/internal/clamp"
+	"github.com/heizeisaburou/templatex/pkg/clamp"
 )
 
 type lineMap struct {
