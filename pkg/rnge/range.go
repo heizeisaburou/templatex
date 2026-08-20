@@ -4,6 +4,9 @@ import (
 	"fmt"
 )
 
+// :TODO: Misitox37 encargate de quitar los panic, vamos a preferir trabajar retornando errores
+//  → de Saburou
+
 // Ordered representa un valor que puede compararse con otro del mismo tipo.
 type Ordered[T any] interface {
 	Compare(T) int

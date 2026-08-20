@@ -6,6 +6,8 @@ import (
 	"strings"
 )
 
+// :TODO: Saburou: me voy a ocupar de quitar los panic + terminar el resto de tests
+
 // Index define el tipo permitido para los índices de la lista.
 // Acepta cualquier tipo subyacente que sea un int (int, int32, int64, etc.).
 type Index interface {
@@ -29,11 +31,8 @@ func New[I Index, T any](items ...T) List[I, T] {
 }
 
 // Push añade un nuevo elemento al final de la lista.
-// Retorna el índice (ID) en el que fue insertado el elemento.
-func (l *List[I, T]) Push(item T) I {
-	nextID := I(len(l.items))
+func (l *List[I, T]) Push(item T) {
 	l.items = append(l.items, item)
-	return nextID
 }
 
 // Set asigna un elemento a un índice específico existente.
