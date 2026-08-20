@@ -15,9 +15,11 @@ type Document struct {
 var (
 	ErrInvalidUTF8 = errors.New("La secuencia utf8 no es valida")
 	ErrOutOfBounds = errors.New("Indice fuera de los limites del documento")
+	ErrOutOfBounds = errors.New("El rango especificado está fuera de los límites del documento")
 )
 
 // New este el el constructor para documentos
+// New construye un documento a partir de un []byte
 func New(src []byte) (Document, error) {
 	if !utf8.Valid(src) {
 		return Document{}, ErrInvalidUTF8
@@ -41,6 +43,7 @@ func (d Document) ToRegion(r Range) (Region, error) {
 	return d.lm.toRegion(r)
 }
 
+// Len devuelve la longitud del documento
 func (d Document) Len() ByteOffset {
 	return ByteOffset(len(d.src))
 }

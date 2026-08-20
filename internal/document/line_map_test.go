@@ -1,7 +1,5 @@
 package document
 
-// :TODO: Test describe el comportamiento al pasar un byte en medio de un caracter y no el byte inicial
-
 import (
 	"errors"
 	"slices"

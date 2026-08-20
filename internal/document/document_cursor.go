@@ -31,7 +31,7 @@ func TestDocumentSlice(t *testing.T) {
 			if err != nil {
 				t.Fatalf("document.Slice(%v) = %v; want nil", tt.rng, err)
 			}
-			
+
 			if !slices.Equal(got, tt.want) {
 				t.Errorf(
 					"document.Slice(%v) = %v; want = %v",
