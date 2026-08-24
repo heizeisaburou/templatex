@@ -1,11 +1,12 @@
 package rnge
 
 import (
+	"errors"
 	"fmt"
 )
 
-// :TODO: Misitox37 encargate de quitar los panic, vamos a preferir trabajar retornando errores
-//  → de Saburou
+// ErrInvalidRange indica que el rango es inválido porque start es mayor que end.
+var ErrInvalidRange = errors.New("invalid range")
 
 // Ordered representa un valor que puede compararse con otro del mismo tipo.
 type Ordered[T any] interface {
@@ -29,16 +30,16 @@ type Range[I Ordered[I]] struct {
 
 // New crea un nuevo [Range] delimitado por start y end.
 //
-// Entra en pánico si end es menor que start.
-func New[I Ordered[I]](start, end I) Range[I] {
+// Devuelve error si end es menor que start.
+func New[I Ordered[I]](start, end I) (Range[I], error) {
 	if start.Compare(end) > 0 {
-		panic(fmt.Sprintf("invalid range: [%v, %v)", start, end))
+		return Range[I]{}, fmt.Errorf("%w: [%v, %v)", ErrInvalidRange, start, end)
 	}
 
 	return Range[I]{
 		start: start,
 		end:   end,
-	}
+	}, nil
 }
 
 // Start devuelve el índice inicial del rango.
@@ -53,36 +54,39 @@ func (r Range[I]) End() I {
 
 // SetStart establece el índice inicial del rango.
 //
-// Entra en pánico si start es mayor que el índice final.
-func (r *Range[I]) SetStart(start I) {
+// Devuelve error si start es mayor que el índice final.
+func (r *Range[I]) SetStart(start I) error {
 	if start.Compare(r.end) > 0 {
-		panic(fmt.Sprintf("invalid range: [%v, %v)", start, r.end))
+		return fmt.Errorf("%w: [%v, %v)", ErrInvalidRange, start, r.end)
 	}
 
 	r.start = start
+	return nil
 }
 
 // SetEnd establece el índice final del rango.
 //
-// Entra en pánico si end es menor que el índice inicial.
-func (r *Range[I]) SetEnd(end I) {
+// Devuelve error si end es menor que el índice inicial.
+func (r *Range[I]) SetEnd(end I) error {
 	if r.start.Compare(end) > 0 {
-		panic(fmt.Sprintf("invalid range: [%v, %v)", r.start, end))
+		return fmt.Errorf("%w: [%v, %v)", ErrInvalidRange, r.start, end)
 	}
 	r.end = end
+	return nil
 }
 
 // Set establece los índices inicial y final del rango.
 //
-// Entra en pánico si end es menor que start.
+// Devuelve error si end es menor que start.
 // Para asignar otro rango puede utilizarse [Range.SetRange].
-func (r *Range[I]) Set(start, end I) {
+func (r *Range[I]) Set(start, end I) error {
 	if start.Compare(end) > 0 {
-		panic(fmt.Sprintf("invalid range: [%v, %v)", start, end))
+		return fmt.Errorf("%w: [%v, %v)", ErrInvalidRange, start, end)
 	}
 
 	r.start = start
 	r.end = end
+	return nil
 }
 
 // SetRange asigna a r los índices de other.
