@@ -1,7 +1,7 @@
 package document
 
 import (
-	"errors"
+	"fmt"
 	"unicode/utf8"
 
 	"github.com/heizeisaburou/templatex/pkg/clamp"
@@ -11,10 +11,6 @@ type lineMap struct {
 	lineStarts []int
 	src        []byte
 }
-
-var (
-	ErrByteOffsetNotAtRuneBoundary = errors.New("el offset de bytes no apunta al inicio de un carácter codificado en UTF-8")
-)
 
 // newLineMap construye el mapa de posiciones de un documento fuente inmutable.
 func newLineMap(src []byte) lineMap {
@@ -38,6 +34,10 @@ func newLineMap(src []byte) lineMap {
 // Si src[] esta vacio la funcion retornara (EOF) Position{1, 1}
 func (m lineMap) toPosition(offset ByteOffset) (Position, error) {
 	ln := ByteOffset(len(m.src))
+	if offset < 0 || offset > ln {
+		return Position{}, fmt.Errorf("%w [len=%d, offset=%d]", ErrOutOfBounds, ln, offset)
+	}
+
 	offset = clamp.ClampPosition(ln, offset)
 
 	if offset < ln {
