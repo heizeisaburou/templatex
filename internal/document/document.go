@@ -2,7 +2,6 @@ package document
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"unicode/utf8"
 )
@@ -12,10 +11,6 @@ type Document struct {
 	src []byte
 }
 
-var (
-	ErrInvalidUTF8 = errors.New("La secuencia utf8 no es valida")
-	ErrOutOfBounds = errors.New("El rango especificado está fuera de los límites del documento")
-)
 
 // New este el el constructor para documentos
 // New construye un documento a partir de un []byte
