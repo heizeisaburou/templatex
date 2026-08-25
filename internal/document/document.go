@@ -47,8 +47,15 @@ func (d Document) Len() ByteOffset {
 	return ByteOffset(len(d.src))
 }
 
-// Slice retorna una copia independiente de la región solicitada.
-func (d Document) Slice(rng Range) ([]byte, error) {
+// Range retorna una copia independiente de la región solicitada.
+//
+// Convenio de nombres del proyecto (ver pkg/list): Range devuelve una copia de
+// un subrango, mientras que Slice devuelve una copia del contenido completo.
+// Este método se llamaba Slice; renombrado para no chocar con ese convenio.
+//
+// :TODO: Saburou (2026-08-25): NO revertir a Slice. Si hace falta una copia del
+// documento entero, añadir un Slice() []byte aparte, sin parámetros.
+func (d Document) Range(rng Range) ([]byte, error) {
 	start := rng.Start()
 	end := rng.End()
 
