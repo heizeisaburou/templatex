@@ -7,8 +7,6 @@ import (
 	"strings"
 )
 
-// :TODO: Saburou: ya no queda ningún panic, falta terminar el resto de tests
-
 var (
 	ErrOutOfBounds = errors.New("out of bounds")
 )
