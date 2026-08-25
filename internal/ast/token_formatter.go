@@ -1,16 +1,34 @@
 package ast
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/heizeisaburou/templatex/internal/document"
 )
 
 type TokenFormatter struct {
-	dc document.Document
+	doc document.Document
 }
 
-// func (f TokenFormatter) String(t Token) string {
-// 	return fmt.Sprintf("Slice(%v),\n Kind(%d), \n Range(%v)",
-// 		f.dc.Slice(t.rng), t.kind, t.rng)
-// }
+func NewTokenFormatter(doc document.Document) TokenFormatter {
+	return TokenFormatter{doc: doc}
+}
 
-// Inventar una forma de mostrar un Token modo debug
+func (f TokenFormatter) Sprint(t Token) (string, error) {
+	var b strings.Builder
+
+	b.WriteString("Token{kind=")
+	fmt.Fprint(&b, t.Kind())
+	b.WriteString(", rng=")
+	fmt.Fprint(&b, t.Range())
+	b.WriteString(", src=")
+	src, err := f.doc.Slice(t.rng)
+	if err != nil {
+		return "", err
+	}
+	fmt.Fprintf(&b, "%q", string(src))
+	b.WriteString("}")
+
+	return b.String(), nil
+}

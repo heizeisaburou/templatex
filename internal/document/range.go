@@ -12,10 +12,10 @@ type Range struct {
 }
 
 // NewRange crea el rango semiabierto [start, end).
-func NewRange(start, end ByteOffset) Range {
+func NewRange(start, end ByteOffset) (Range, error) {
 	return Range{
 		rng: rnge.New(start, end),
-	}
+	}, nil
 }
 
 // Len devuelve la longitud del rango.
