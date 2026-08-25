@@ -1,12 +1,15 @@
 package list
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
 )
 
-// :TODO: Saburou: me voy a ocupar de quitar los panic + terminar el resto de tests
+var (
+	ErrOutOfBounds = errors.New("out of bounds")
+)
 
 // Index define el tipo permitido para los índices de la lista.
 // Acepta cualquier tipo subyacente que sea un int (int, int32, int64, etc.).
@@ -36,37 +39,57 @@ func (l *List[I, T]) Push(item T) {
 }
 
 // Set asigna un elemento a un índice específico existente.
-// Hace panic si el índice es menor a 0 o mayor/igual al tamaño actual de la lista.
-func (l *List[I, T]) Set(id I, item T) {
-	if id < 0 || int(id) >= len(l.items) {
-		panic(fmt.Sprintf("list index out of range: %d", id))
+//
+// Retorna un error que envuelve ErrOutOfBounds si el índice es menor a 0
+// o mayor/igual al tamaño actual de la lista. En ese caso la lista no se modifica.
+func (l *List[I, T]) Set(id I, item T) error {
+	length := l.Len()
+	if id < 0 || id >= length {
+		return fmt.Errorf("%w: [len=%d, id=%d]", ErrOutOfBounds, length, id)
 	}
 
 	l.items[id] = item
+
+	return nil
 }
 
-// Truncate reduce la longitud de la lista hasta end.
+// Truncate reduce la longitud de la lista hasta end, descartando los
+// elementos a partir de esa posición.
 //
 // Antes de reducir el slice, pone a valor cero los elementos descartados.
 // Esto evita que el array subyacente siga reteniendo referencias a objetos
 // que podrían ser reclamados por el garbage collector.
-func (l *List[I, T]) Truncate(end I) {
-	if end < 0 || int(end) > len(l.items) {
-		panic(fmt.Sprintf("invalid list truncate: %d", end))
+//
+// Retorna un error que envuelve ErrOutOfBounds si end es menor a 0 o mayor
+// que la longitud actual. En ese caso la lista no se modifica.
+func (l *List[I, T]) Truncate(end I) error {
+	if end < 0 || end > l.Len() {
+		return fmt.Errorf("%w: [len=%d, end=%d]", ErrOutOfBounds, l.Len(), end)
 	}
 
 	n := int(end)
 
 	clear(l.items[n:])
 	l.items = l.items[:n]
+
+	return nil
 }
 
-// ReplaceRange elimina los elementos en el rango [start:end] y los sustituye
+// ReplaceRange elimina los elementos del rango [start, end) y los sustituye
 // por los elementos proporcionados en 'repl'. Maneja dinámicamente el
 // redimensionamiento del slice subyacente.
-func (l *List[I, T]) ReplaceRange(start, end I, repl ...T) {
-	if start < 0 || end < start || int(end) > len(l.items) {
-		panic(fmt.Sprintf("invalid list range: %d:%d", start, end))
+//
+// Retorna un error que envuelve ErrOutOfBounds si el rango es inválido
+// (start < 0, end < start o end > Len). En ese caso la lista no se modifica.
+func (l *List[I, T]) ReplaceRange(start, end I, repl ...T) error {
+	if start < 0 || end < start || end > l.Len() {
+		return fmt.Errorf(
+			"%w: [len=%d, start=%d, end=%d]",
+			ErrOutOfBounds,
+			l.Len(),
+			start,
+			end,
+		)
 	}
 
 	removed := int(end - start)
@@ -76,7 +99,7 @@ func (l *List[I, T]) ReplaceRange(start, end I, repl ...T) {
 	// evitamos reasignar memoria y solo copiamos.
 	if removed == inserted {
 		copy(l.items[start:end], repl)
-		return
+		return nil
 	}
 
 	// Camino dinámico: Creamos un nuevo slice con la capacidad exacta necesaria
@@ -86,34 +109,49 @@ func (l *List[I, T]) ReplaceRange(start, end I, repl ...T) {
 	next = append(next, repl...)
 	next = append(next, l.items[end:]...)
 	l.items = next
+
+	return nil
 }
 
 // At retorna el elemento ubicado en el índice especificado.
-// Hace panic si el índice está fuera de los límites de la lista.
-func (l List[I, T]) At(id I) T {
-	if id < 0 || int(id) >= len(l.items) {
-		panic(fmt.Sprintf("invalid index: %d", id))
+//
+// El segundo valor sigue el convenio ok de Go: es true si el índice existe.
+// Si está fuera de los límites de la lista retorna el valor cero de T y false.
+func (l List[I, T]) At(id I) (T, bool) {
+	if id < 0 || id >= l.Len() {
+		var zero T
+		return zero, false
 	}
 
-	return l.items[id]
+	return l.items[id], true
 }
 
-// Range devuelve una copia de los elementos dentro del rango [start:end].
+// Range devuelve una copia de los elementos dentro del rango [start, end).
 // Retorna un nuevo slice, asegurando que las modificaciones externas no
 // afecten el estado interno de la lista.
-func (l List[I, T]) Range(start, end I) []T {
-	if start < 0 || end < start || int(end) > len(l.items) {
-		panic(fmt.Sprintf("invalid list range: %d:%d", start, end))
+//
+// Retorna un error que envuelve ErrOutOfBounds si el rango es inválido
+// (start < 0, end < start o end > Len). En ese caso el slice devuelto es nil.
+func (l List[I, T]) Range(start, end I) ([]T, error) {
+	if start < 0 || end < start || end > l.Len() {
+		return nil, fmt.Errorf(
+			"%w: [len=%d, start=%d, end=%d]",
+			ErrOutOfBounds,
+			l.Len(),
+			start,
+			end,
+		)
 	}
 
 	dest := make([]T, end-start)
 	copy(dest, l.items[start:end])
 
-	return dest
+	return dest, nil
 }
 
 // Slice retorna una copia completa de todos los elementos de la lista.
-// Se utiliza append sobre un slice nil para garantizar la aislación de memoria.
+// Se utiliza append sobre un slice nil para garantizar la aislación de memoria:
+// la copia es superficial, así que los punteros almacenados siguen compartidos.
 func (l List[I, T]) Slice() []T {
 	return append([]T(nil), l.items...)
 }

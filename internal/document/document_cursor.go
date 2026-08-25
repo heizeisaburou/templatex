@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestDocumentSlice(t *testing.T) {
+func TestDocumentRange(t *testing.T) {
 	tests := []struct {
 		name string
 		src  []byte
@@ -27,14 +27,14 @@ func TestDocumentSlice(t *testing.T) {
 				t.Fatalf("document.New(%v) = %v; want nil", tt.src, err)
 			}
 
-			got, err := dc.Slice(tt.rng)
+			got, err := dc.Range(tt.rng)
 			if err != nil {
-				t.Fatalf("document.Slice(%v) = %v; want nil", tt.rng, err)
+				t.Fatalf("document.Range(%v) = %v; want nil", tt.rng, err)
 			}
 
 			if !slices.Equal(got, tt.want) {
 				t.Errorf(
-					"document.Slice(%v) = %v; want = %v",
+					"document.Range(%v) = %v; want = %v",
 					tt.rng,
 					got,
 					tt.want,

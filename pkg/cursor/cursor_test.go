@@ -80,13 +80,13 @@ func TestNewAtOutOfRange(t *testing.T) {
 	src := []byte{'a', 'b', 'c'}
 
 	_, err := NewAt(src, len(src)+1)
-	if !errors.Is(err, ErrPositionOutOfRange) {
+	if !errors.Is(err, ErrOutOfBounds) {
 		t.Fatalf(
 			"NewAt(%q, %d) error = %v, want %v",
 			src,
 			len(src)+1,
 			err,
-			ErrPositionOutOfRange,
+			ErrOutOfBounds,
 		)
 	}
 }
@@ -348,12 +348,12 @@ func TestCursorSeek(t *testing.T) {
 			err := cur.Seek(tt.seek)
 
 			if tt.wantErr {
-				if !errors.Is(err, ErrPositionOutOfRange) {
+				if !errors.Is(err, ErrOutOfBounds) {
 					t.Fatalf(
 						"cur.Seek(%d) error = %v, want %v",
 						tt.seek,
 						err,
-						ErrPositionOutOfRange,
+						ErrOutOfBounds,
 					)
 				}
 
