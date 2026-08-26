@@ -12,10 +12,24 @@ type Range struct {
 }
 
 // NewRange crea el rango semiabierto [start, end).
+//
+// Devuelve error si end es menor que start.
 func NewRange(start, end ByteOffset) (Range, error) {
-	return Range{
-		rng: rnge.New(start, end),
-	}, nil
+	r, err := rnge.New(start, end)
+	if err != nil {
+		return Range{}, err
+	}
+	return Range{rng: r}, nil
+}
+
+// MustNewRange crea el rango semiabierto [start, end).
+// Entra en pánico si el rango es inválido. Útil para tests y literales.
+func MustNewRange(start, end ByteOffset) Range {
+	r, err := NewRange(start, end)
+	if err != nil {
+		panic(err)
+	}
+	return r
 }
 
 // Len devuelve la longitud del rango.
@@ -35,24 +49,24 @@ func (r Range) End() ByteOffset {
 
 // SetStart establece el índice inicial del rango.
 //
-// Entra en pánico si start es mayor que el índice final.
-func (r *Range) SetStart(start ByteOffset) {
-	r.rng.SetStart(start)
+// Devuelve error si start es mayor que el índice final.
+func (r *Range) SetStart(start ByteOffset) error {
+	return r.rng.SetStart(start)
 }
 
 // SetEnd establece el índice final del rango.
 //
-// Entra en pánico si end es menor que el índice inicial.
-func (r *Range) SetEnd(end ByteOffset) {
-	r.rng.SetEnd(end)
+// Devuelve error si end es menor que el índice inicial.
+func (r *Range) SetEnd(end ByteOffset) error {
+	return r.rng.SetEnd(end)
 }
 
 // Set establece los índices inicial y final del rango.
 //
-// Entra en pánico si end es menor que start.
+// Devuelve error si end es menor que start.
 // Para asignar otro rango puede utilizarse [Range.SetRange].
-func (r *Range) Set(start, end ByteOffset) {
-	r.rng.Set(start, end)
+func (r *Range) Set(start, end ByteOffset) error {
+	return r.rng.Set(start, end)
 }
 
 // SetRange asigna a r los índices de other.

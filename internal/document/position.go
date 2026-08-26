@@ -24,7 +24,7 @@ func NewPosition(line int, col int) Position {
 
 // Compare primero retorna si las lineas no son iguales y cual es mayor o menor.
 //
-//y si el primer test pasa retorna cual columna es major a la otra o si son iguales.
+//y si el primer test pasa retorna cual columna es mayor a la otra o si son iguales.
 func (p Position) Compare(other Position) int {
 	if p.line != other.line {
 		if p.line < other.line {

@@ -18,7 +18,7 @@ type Cursor[T any, I Index] struct {
 	offset I
 }
 
-var ErrPositionOutOfRange = errors.New("cursor: position out of range")
+var ErrOutOfBounds = errors.New("out of range")
 
 // New crea un cursor situado al principio de src.
 func New[T any, I Index](src []T) *Cursor[T, I] {
@@ -87,7 +87,7 @@ func (c *Cursor[T, I]) Seek(position I) error {
 	if position < 0 || position > c.Len() {
 		return fmt.Errorf(
 			"%w: %d not in [0,%d]",
-			ErrPositionOutOfRange,
+			ErrOutOfBounds,
 			position,
 			c.Len(),
 		)
@@ -109,7 +109,7 @@ func (c *Cursor[T, I]) Move(delta I) error {
 	if delta < minDelta || delta > maxDelta {
 		return fmt.Errorf(
 			"%w: cannot move %d from position %d; valid delta [%d,%d]",
-			ErrPositionOutOfRange,
+			ErrOutOfBounds,
 			delta,
 			c.offset,
 			minDelta,
