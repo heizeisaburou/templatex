@@ -360,6 +360,29 @@ Solo se puede nombrar así a una rama, que será trabajada en local con fines de
 experiment/local-changes
 ```
 
+### Prohibido usar nombres de archivo en las ramas
+
+El nombre de una rama **no puede contener un punto**. La única excepción es `release/`, cuyos nombres llevan versión: `release/v11.00`.
+
+Git materializa el nombre de la rama como un archivo real dentro de `.git/refs` y `.git/logs/refs`. Una rama llamada `fix/parser.go` crea archivos acabados en `.go` que no son código Go, y cualquier herramienta que recorra el repositorio por extensión intenta parsearlos: `gofmt -l .` falla con `expected 'package'` sobre una referencia de Git.
+
+Tampoco conviene meter nombres de archivo aunque no lleven extensión: quedan largos, envejecen mal en cuanto el archivo se mueve y describen el *dónde* en vez del *qué*.
+
+La regla se comprueba sola. En cada Pull Request la valida el workflow `.github/workflows/branch-name.yml`, y en local puedes activar el aviso previo al push con:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+Para comprobar un nombre a mano:
+
+```bash
+sh scripts/check-branch-name.sh feat/agregar-validacion
+```
+
+El resto de ajustes que hay que hacer una vez por clon está en
+[docs/configuracion-del-clon.md](docs/configuracion-del-clon.md).
+
 </details>
 
 ---

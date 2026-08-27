@@ -27,7 +27,7 @@ func New[T any, I Index](src []T) *Cursor[T, I] {
 
 // NewAt crea un cursor situado en position.
 //
-// Devuelve ErrPositionOutOfRange cuando position no pertenece al intervalo
+// Devuelve ErrOutOfBounds cuando position no pertenece al intervalo
 // [0, len(src)].
 func NewAt[T any, I Index](src []T, position I) (*Cursor[T, I], error) {
 	c := New[T, I](src)
@@ -43,7 +43,7 @@ func (c Cursor[T, I]) Len() I {
 	return I(len(c.src))
 }
 
-// Len devuelve la posición actual del cursor
+// Pos devuelve la posición actual del cursor
 func (c Cursor[T, I]) Pos() I {
 	return c.offset
 }
@@ -82,7 +82,7 @@ func (c *Cursor[T, I]) Next() (T, bool) {
 // Seek mueve el cursor a una posición absoluta.
 //
 // Si position no pertenece al intervalo [0, Len()], devuelve
-// ErrPositionOutOfRange y no modifica el cursor.
+// ErrOutOfBounds y no modifica el cursor.
 func (c *Cursor[T, I]) Seek(position I) error {
 	if position < 0 || position > c.Len() {
 		return fmt.Errorf(
@@ -100,7 +100,7 @@ func (c *Cursor[T, I]) Seek(position I) error {
 // Move desplaza el cursor delta posiciones desde su posición actual.
 //
 // Si el destino no pertenece al intervalo [0, Len()], devuelve
-// ErrPositionOutOfRange y no modifica el cursor. La validación se realiza antes
+// ErrOutOfBounds y no modifica el cursor. La validación se realiza antes
 // de sumar para evitar un posible desbordamiento de enteros.
 func (c *Cursor[T, I]) Move(delta I) error {
 	minDelta := -c.offset

@@ -23,7 +23,7 @@ func (f TokenFormatter) Sprint(t Token) (string, error) {
 	b.WriteString(", rng=")
 	fmt.Fprint(&b, t.Range())
 	b.WriteString(", src=")
-	src, err := f.doc.Slice(t.rng)
+	src, err := f.doc.Range(t.rng)
 	if err != nil {
 		return "", err
 	}

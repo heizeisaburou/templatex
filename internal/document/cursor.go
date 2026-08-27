@@ -12,10 +12,14 @@ func NewCursor(doc Document) *Cursor {
 	}
 }
 
+// NewCursorAt crea un cursor situado en position.
+//
+// Devuelve ErrOutOfBounds cuando position no pertenece al intervalo
+// [0, doc.Len()].
 func NewCursorAt(doc Document, position ByteOffset) (*Cursor, error) {
 	cur, err := cursor.NewAt(doc.src, position)
 	if err != nil {
-		return nil, err
+		return nil, outOfBounds(err)
 	}
 
 	return &Cursor{cur: cur}, nil
@@ -26,7 +30,7 @@ func (c Cursor) Len() ByteOffset {
 	return c.cur.Len()
 }
 
-// Len devuelve la posición actual del cursor
+// Pos devuelve la posición actual del cursor
 func (c Cursor) Pos() ByteOffset {
 	return c.cur.Pos()
 }
@@ -53,16 +57,16 @@ func (c *Cursor) Next() (byte, bool) {
 // Seek mueve el cursor a una posición absoluta.
 //
 // Si position no pertenece al intervalo [0, Len()], devuelve
-// ErrPositionOutOfRange y no modifica el cursor.
+// ErrOutOfBounds y no modifica el cursor.
 func (c *Cursor) Seek(position ByteOffset) error {
-	return c.cur.Seek(position)
+	return outOfBounds(c.cur.Seek(position))
 }
 
 // Move desplaza el cursor delta posiciones desde su posición actual.
 //
 // Si el destino no pertenece al intervalo [0, Len()], devuelve
-// ErrPositionOutOfRange y no modifica el cursor. La validación se realiza antes
+// ErrOutOfBounds y no modifica el cursor. La validación se realiza antes
 // de sumar para evitar un posible desbordamiento de enteros.
 func (c *Cursor) Move(delta ByteOffset) error {
-	return c.cur.Move(delta)
+	return outOfBounds(c.cur.Move(delta))
 }

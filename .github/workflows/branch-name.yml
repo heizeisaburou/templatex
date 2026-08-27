@@ -1,0 +1,21 @@
+name: branch-name
+
+on:
+  pull_request:
+    types: [opened, reopened, edited, synchronize]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validar el nombre de la rama
+        # El nombre se pasa por entorno, nunca interpolado en el script: una
+        # rama puede contener metacaracteres de shell.
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: sh scripts/check-branch-name.sh "$HEAD_REF"
