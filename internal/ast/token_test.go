@@ -7,6 +7,19 @@ import (
 	"github.com/heizeisaburou/templatex/internal/document"
 )
 
+type Range = document.Range
+
+func newToken(t *testing.T, kind TokenKind, rng Range) Token {
+  t.Helper()
+
+  token, err := NewToken(kind, rng)
+  if err != nil {
+    t.Fatalf("newToken() error al crear token")
+  }
+
+  return token
+}
+
 func TestNewTokenConstructor(t *testing.T) {
 	tests := []struct {
 		name string

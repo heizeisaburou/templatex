@@ -3,8 +3,6 @@ package document
 import (
 	"fmt"
 	"unicode/utf8"
-
-	"github.com/heizeisaburou/templatex/pkg/clamp"
 )
 
 type lineMap struct {
@@ -37,8 +35,6 @@ func (m lineMap) toPosition(offset ByteOffset) (Position, error) {
 	if offset < 0 || offset > ln {
 		return Position{}, fmt.Errorf("%w [len=%d, offset=%d]", ErrOutOfBounds, ln, offset)
 	}
-
-	offset = clamp.ClampPosition(ln, offset)
 
 	if offset < ln {
 		// No fallará siempre y cuando src sea una secuencia utf8 válida.
@@ -94,6 +90,5 @@ func (m lineMap) toRegion(r Range) (Region, error) {
 		return Region{}, err
 	}
 
-	return NewRegion(start, end), nil
-
+	return NewRegion(start, end)
 }
