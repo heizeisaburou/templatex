@@ -44,16 +44,16 @@ func (d Document) Len() ByteOffset {
 	return ByteOffset(len(d.src))
 }
 
-// Range retorna una copia independiente de la región solicitada.
+// Range devuelve una copia independiente de los bytes contenidos en rng.
 //
-// Devuelve ErrOutOfBounds si el rango no está contenido en [0, Len()].
+// La copia es independiente: modificarla no afecta al documento.
 //
-// Convenio de nombres del proyecto (ver pkg/list): Range devuelve una copia de
-// un subrango, mientras que Slice devuelve una copia del contenido completo.
-// Este método se llamaba Slice; renombrado para no chocar con ese convenio.
+// Devuelve ErrOutOfBounds si rng no está contenido en [0, Len()].
 //
-// :TODO: Saburou (2026-08-25): NO revertir a Slice. Si hace falta una copia del
-// documento entero, añadir un Slice() []byte aparte, sin parámetros.
+// El nombre sigue el convenio de pkg/list: Range copia un subrango y recibe los
+// límites, mientras que Slice copia el contenido completo y no recibe
+// parámetros. Por eso este método no se llama Slice; si en el futuro hace falta
+// una copia del documento entero, corresponde a un Slice() []byte aparte.
 func (d Document) Range(rng Range) ([]byte, error) {
 	start := rng.Start()
 	end := rng.End()

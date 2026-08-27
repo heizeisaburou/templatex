@@ -55,18 +55,6 @@ func TestNewLineMapToPosition(t *testing.T) {
 			want:   NewPosition(1, 1),
 		},
 		{
-			name:   "Límite inferior: Clamp de offset negativo",
-			offset: ByteOffset(-10),
-			src:    []byte("xooo"),
-			want:   NewPosition(1, 1), // Se ajusta al offset 0.
-		},
-		{
-			name:   "Límite superior: Clamp por desbordamiento masivo",
-			offset: ByteOffset(999),
-			src:    []byte("a\nb\nc"),
-			want:   NewPosition(3, 2), // EOF después de la 'c'.
-		},
-		{
 			name:   "Frontera: Inicio exacto después de un salto de línea",
 			offset: ByteOffset(2),
 			src:    []byte("a\nb"),    // a=0, \n=1, b=2
@@ -83,12 +71,6 @@ func TestNewLineMapToPosition(t *testing.T) {
 			offset: ByteOffset(0),
 			src:    []byte(""),
 			want:   NewPosition(1, 1),
-		},
-		{
-			name:   "Desbordamiento masivo después de salto de línea final",
-			offset: ByteOffset(9999),
-			src:    []byte("a\nb\nc\n"),
-			want:   NewPosition(4, 1),
 		},
 		{
 			name:   "Salto de línea después de carácter multibyte",
@@ -127,6 +109,30 @@ func TestNewLineMapToPositionErrors(t *testing.T) {
 		src     []byte
 		wantErr error
 	}{
+		{
+			name:    "Offset negativo",
+			offset:  ByteOffset(-10),
+			src:     []byte("xooo"),
+			wantErr: ErrOutOfBounds,
+		},
+		{
+			name:    "Offset justo después del final",
+			offset:  ByteOffset(5),
+			src:     []byte("xooo"),
+			wantErr: ErrOutOfBounds,
+		},
+		{
+			name:    "Offset muy por encima de la longitud",
+			offset:  ByteOffset(999),
+			src:     []byte("a\nb\nc"),
+			wantErr: ErrOutOfBounds,
+		},
+		{
+			name:    "Offset muy por encima de la longitud tras salto de línea final",
+			offset:  ByteOffset(9999),
+			src:     []byte("a\nb\nc\n"),
+			wantErr: ErrOutOfBounds,
+		},
 		{
 			name:    "Offset en el primer byte interior de rune UTF-8 de 3 bytes",
 			offset:  ByteOffset(1),
@@ -187,7 +193,6 @@ func TestNewLineMapToPositionErrors(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			lm := newLineMap(tt.src)
 			got, err := lm.toPosition(tt.offset)
-			_ = got
 
 			if !errors.Is(err, tt.wantErr) {
 				t.Errorf("\nPrueba:  %s\nFuente:  %q (Longitud: %d bytes)\nOffset:  %d \nPosicion obtenida: %v \nError Obtenido:  %v\nError Esperado:  %v", tt.name, tt.src, len(tt.src), tt.offset, got, err, tt.wantErr)

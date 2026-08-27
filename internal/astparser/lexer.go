@@ -9,5 +9,4 @@ type Lexer struct{}
 
 func (l Lexer) Lexerize(doc document.Document) []ast.Token {
 	panic("Termina Lexerize")
-	return nil
 }

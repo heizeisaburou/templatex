@@ -12,11 +12,13 @@ type Region struct {
 }
 
 // NewRegion crea la región semiabierta [start, end).
+//
+// Devuelve ErrInvalidRange si end es menor que start.
 func NewRegion(start, end Position) (Region, error) {
 	rng, err := rnge.New(start, end)
 
 	if err != nil {
-		return Region{}, err
+		return Region{}, invalidRange(err)
 	}
 
 	return Region{
@@ -36,29 +38,31 @@ func (r Region) End() Position {
 
 // SetStart establece el índice inicial del rango.
 //
-// Entra en pánico si start es mayor que el índice final.
-func (r *Region) SetStart(start Position) {
-	r.rng.SetStart(start)
+// Devuelve ErrInvalidRange si start es mayor que el índice final, y en ese caso
+// no modifica la región.
+func (r *Region) SetStart(start Position) error {
+	return invalidRange(r.rng.SetStart(start))
 }
 
 // SetEnd establece el índice final del rango.
 //
-// Entra en pánico si end es menor que el índice inicial.
-func (r *Region) SetEnd(end Position) {
-	r.rng.SetEnd(end)
+// Devuelve ErrInvalidRange si end es menor que el índice inicial, y en ese caso
+// no modifica la región.
+func (r *Region) SetEnd(end Position) error {
+	return invalidRange(r.rng.SetEnd(end))
 }
 
 // Set establece los índices inicial y final del rango.
 //
-// Entra en pánico si end es menor que start.
-// Para asignar otro rango puede utilizarse [Range.SetRange].
-func (r *Region) Set(start, end Position) {
-	r.rng.Set(start, end)
+// Devuelve ErrInvalidRange si end es menor que start, y en ese caso no modifica
+// la región. Para asignar otra región puede utilizarse [Region.SetRange].
+func (r *Region) Set(start, end Position) error {
+	return invalidRange(r.rng.Set(start, end))
 }
 
 // SetRange asigna a r los índices de other.
 //
-// Para establecer los índices por separado puede utilizarse [Range.Set].
+// Para establecer los índices por separado puede utilizarse [Region.Set].
 func (r *Region) SetRange(other Region) {
 	r.rng.SetRange(other.rng)
 }
