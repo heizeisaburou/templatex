@@ -2,20 +2,30 @@ package ast
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/heizeisaburou/templatex/internal/document"
 )
 
 type TokenKind int
 
-var (
-	ErrNotValidToken = errors.New("El token utilizado no es valido")
-)
-
 const (
 	TokenUnknown TokenKind = iota
 	TokenWhitespace
-	TokenLimit
+	tokenLimit
+)
+
+func (k TokenKind) String() string {
+	switch k {
+	case TokenWhitespace:
+		return "TokenWhitespace"
+	default:
+		return fmt.Sprintf("TokenUnknown(%d)", k)
+	}
+}
+
+var (
+	ErrNotValidToken = errors.New("El token utilizado no es valido")
 )
 
 type Token struct {
@@ -25,7 +35,7 @@ type Token struct {
 
 func NewToken(kind TokenKind, rng document.Range) (Token, error) {
 
-	if kind < TokenUnknown || kind > TokenLimit {
+	if kind < TokenUnknown || kind > tokenLimit {
 		return Token{}, ErrNotValidToken
 	}
 
