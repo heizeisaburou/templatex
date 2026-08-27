@@ -12,10 +12,16 @@ type Region struct {
 }
 
 // NewRegion crea la región semiabierta [start, end).
-func NewRegion(start, end Position) Region {
-	return Region{
-		rng: rnge.New(start, end),
+func NewRegion(start, end Position) (Region, error) {
+	rng, err := rnge.New(start, end)
+
+	if err != nil {
+		return Region{}, err
 	}
+
+	return Region{
+		rng: rng,
+	}, nil
 }
 
 // Start devuelve el índice inicial del rango.

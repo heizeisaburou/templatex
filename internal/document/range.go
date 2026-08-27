@@ -22,16 +22,6 @@ func NewRange(start, end ByteOffset) (Range, error) {
 	return Range{rng: r}, nil
 }
 
-// MustNewRange crea el rango semiabierto [start, end).
-// Entra en pánico si el rango es inválido. Útil para tests y literales.
-func MustNewRange(start, end ByteOffset) Range {
-	r, err := NewRange(start, end)
-	if err != nil {
-		panic(err)
-	}
-	return r
-}
-
 // Len devuelve la longitud del rango.
 func (r Range) Len() ByteOffset {
 	return r.End() - r.Start()

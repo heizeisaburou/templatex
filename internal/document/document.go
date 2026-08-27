@@ -11,9 +11,9 @@ type Document struct {
 	src []byte
 }
 
-
-// New este el el constructor para documentos
-// New construye un documento a partir de un []byte
+// New construye un documento a partir de src.
+//
+// Devuelve ErrInvalidUTF8 si src no es una secuencia UTF-8 válida.
 func New(src []byte) (Document, error) {
 	if !utf8.Valid(src) {
 		return Document{}, ErrInvalidUTF8
@@ -24,7 +24,8 @@ func New(src []byte) (Document, error) {
 
 // ToPosition convierte un offset de bytes en una posición dentro del documento.
 //
-// Los offsets situados fuera de los límites del documento se ajustan al rango válido.
+// Devuelve ErrOutOfBounds si offset no pertenece al intervalo [0, Len()] y
+// ErrByteOffsetNotAtRuneBoundary si offset no apunta al inicio de un carácter.
 func (d Document) ToPosition(offset ByteOffset) (Position, error) {
 	return d.lm.toPosition(offset)
 }
@@ -32,17 +33,20 @@ func (d Document) ToPosition(offset ByteOffset) (Position, error) {
 // ToRegion convierte un rango de bytes en un rango de posiciones dentro del
 // documento.
 //
-// Los offsets situados fuera de los límites del documento se ajustan al rango válido.
+// Propaga el error de [Document.ToPosition] si alguno de los extremos del rango
+// no es un offset válido dentro del documento.
 func (d Document) ToRegion(r Range) (Region, error) {
 	return d.lm.toRegion(r)
 }
 
-// Len devuelve la longitud del documento
+// Len devuelve la longitud en bytes del documento.
 func (d Document) Len() ByteOffset {
 	return ByteOffset(len(d.src))
 }
 
 // Range retorna una copia independiente de la región solicitada.
+//
+// Devuelve ErrOutOfBounds si el rango no está contenido en [0, Len()].
 //
 // Convenio de nombres del proyecto (ver pkg/list): Range devuelve una copia de
 // un subrango, mientras que Slice devuelve una copia del contenido completo.
