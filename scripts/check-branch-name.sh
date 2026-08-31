@@ -17,36 +17,38 @@ if [ -z "$branch" ]; then
 	exit 2
 fi
 
-# Ramas de larga vida: no siguen el formato categoría/propósito.
+# Ramas de larga vida: no siguen el formato autor/timestamp.
+# experiment/local-changes es la única rama de experimentación permitida
+# en local según CONTRIBUTING.md (no se sube a dev).
 case "$branch" in
-main | dev)
+main | dev | experiment/local-changes)
 	exit 0
 	;;
 esac
-
-categories='feature|feat|fix|docs|refactor|hotfix|release|experiment'
 
 fail() {
 	echo "Nombre de rama inválido: $branch" >&2
 	echo "" >&2
 	echo "  $1" >&2
 	echo "" >&2
-	echo "Formato: categoría/propósito, en minúsculas y sin puntos." >&2
-	echo "Categorías: feature, feat, fix, docs, refactor, hotfix, release, experiment." >&2
-	echo "Ejemplos: feat/agregar-validacion, fix/corregir-parser, release/v11.00" >&2
+	echo "Formato: autor/timestamp, sin puntos." >&2
+	echo "Ejemplos: Misitox37/08302026, heizeisaburou/08302026, experiment/local-changes" >&2
 	exit 1
 }
 
-# Una sola barra: categoría/propósito. Las barras extra crean subdirectorios
+# Una sola barra: autor/timestamp. Las barras extra crean subdirectorios
 # dentro de .git/refs y complican la limpieza.
-if ! printf '%s' "$branch" | grep -Eq "^($categories)/[^/]+$"; then
-	fail "No sigue el formato categoría/propósito."
+if ! printf '%s' "$branch" | grep -Eq "^[^/]+/[^/]+$"; then
+	fail "No sigue el formato autor/timestamp."
 fi
 
 purpose="${branch#*/}"
 
 if printf '%s' "$branch" | grep -q '[A-Z]'; then
-	fail "Contiene mayúsculas."
+	case "$branch" in
+	Misitox37/*) ;;
+	*) fail "Contiene mayúsculas." ;;
+	esac
 fi
 
 case "$purpose" in
@@ -59,12 +61,14 @@ esac
 # que recorren el repositorio por extensión intentan parsear: `gofmt -l .` falla
 # sobre una referencia de Git llamada, por ejemplo, "fix/parser.go".
 #
-# release/ es la única excepción, porque sus nombres llevan versión: v11.00.
-case "$branch" in
-release/*) ;;
-*)
-	case "$purpose" in
-	*.*) fail "Contiene un punto. No uses nombres de archivo ni extensiones en las ramas." ;;
-	esac
-	;;
+# Antes había una excepción para release/ (release/v11.00), pero ese formato
+# es solo para commits según CONTRIBUTING.md, no para ramas. Ahora no hay
+# excepciones: ningún nombre de rama puede contener un punto.
+case "$purpose" in
+*.*) fail "Contiene un punto. No uses nombres de archivo ni extensiones en las ramas." ;;
 esac
+
+# El timestamp debe ser exactamente 8 dígitos MMDDYYYY, ej: 08302026.
+if ! printf '%s' "$purpose" | grep -Eq '^[0-9]{8}$'; then
+	fail "El timestamp debe ser 8 dígitos MMDDYYYY (ej: 08302026)."
+fi
