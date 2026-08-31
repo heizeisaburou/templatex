@@ -6,55 +6,21 @@ Además, se incluye una guía para el manejo de la documentación del proyecto.
 
 ## Índice
 
-<details>
-<summary><a href="#title1">1. Configuración del directorio local</a></summary>
-
-* Configuración del entorno local y recomendación del manejo de una cuenta de git.
-
-</details>
-
-<details>
-<summary><a href="#title2">2. Ramas del proyecto</a></summary>
-
-* Explicación de la función de cada rama y una breve intoducción al manejo de elas.
-
-</details>
-
-<details>
-<summary><a href="#title3">3. Flujo de trabajo diario</a></summary>
-
-* Los comandos y el flujo de trabajo que maneja cada contribuidor y el grupo
-  en general, siendo un flujo rápido, limpio y sin agujeros.
-
-</details>
-
-<details>
-<summary><a href="#title4">4. Resolver un conflicto de merge</a></summary>
-
-* Se detalla como resolver un conflicto al hacer merge entre commits
-  (commit antiguo --> rama stage y commit actual --> rama actual), solo
-  se involucra stage y una rama dev, nunca se involucra main.
-
-</details>
-
-<details>
-<summary><a href="#title5">5. Nomenclatura de commits y rama</a></summary>
-
-* La nomenclatura a manejar para los títulos de ramas y commits
-
-</details>
-
-<details>
-<summary><a href="#title6">6. Documentación del proyecto</a></summary>
-
-*
-
-</details>
+- [1. Configuración del directorio local](#1-configuración-del-espacio-de-trabajo)
+  - Configuración del entorno local y recomendación del manejo de una cuenta de git.
+- [2. Ramas del proyecto](#2-ramas-del-proyecto)
+  - Explicación de la función de cada rama y una breve intoducción al manejo de elas.
+- [3. Flujo de trabajo diario](#3-flujo-de-trabajo-diario)
+  - Los comandos y el flujo de trabajo que maneja cada contribuidor y el grupo en general, siendo un flujo rápido, limpio y sin agujeros.
+- [4. Resolver un conflicto de merge](#4-resolver-un-conflicto-de-merge)
+  - Se detalla como resolver un conflicto al hacer merge entre commits (commit antiguo --> rama stage y commit actual --> rama actual), solo se involucra stage y una rama dev, nunca se involucra main.
+- [5. Nomenclatura de commits y rama](#5-nomenclatura-de-commits-y-ramas)
+  - La nomenclatura a manejar para los títulos de ramas y commits
+- [6. Documentación del proyecto](#6-documentación-del-proyecto)
 
 ---
 
-<details open>
-<summary><h2 id="title1">1. Configuración del espacio de trabajo</h2></summary>
+## 1. Configuración del espacio de trabajo
 
 La integración de githooks conlleva ciertas configuraciones que deben ejecutarse por detrás para garantizar un espacio de trabajo funcional. Aquí se explica cómo hacer estos ajustes después de clonar el repositorio.
 
@@ -64,10 +30,9 @@ Tener una cuenta de Git correctamente configurada es esencial. **Está prohibido
 
 Para evitar estos problemas, se recomienda utilizar una **configuración local**, de modo que la cuenta de Git pueda configurarse específicamente para cada repositorio o espacio de trabajo.
 
-<details>
-<summary>Configurar cuenta de Git</summary>
+### Configurar cuenta de Git
 
-> [!IMPORTANT]
+> [!TIP]
 >
 > Si configuras una cuenta de Git a nivel local, esta tendrá prioridad sobre las configuraciones globales y de sistema.
 >
@@ -105,55 +70,50 @@ git config --global user.name "kebab-case"
 git config --global user.email "user@gmail.com"
 ```
 
-</details>
-
-<details open>
-
-<summary>Configurar el clon</summary>
+### Configurar el clon
 
 1. Clonar el repositorio dentro de un directorio:
 
-     ```bash
-     mkdir templateX
-     cd teplateX
-     ```
-     Luego:
-     ```bash
-     git init
-     git remote add origin https://github.com/heizeisaburou/templatex.git
-     ```
-    
+   ```bash
+   mkdir templateX
+   cd teplateX
+   ```
+
+   Luego:
+
+   ```bash
+   git init
+   git remote add origin https://github.com/heizeisaburou/templatex.git
+   ```
+
 2. Activar los hooks
 
-     ```bash
-     git config core.hooksPath .githooks
-     ```
-     .githooks contiene el hook [pre-push](pre-push), encargado de validar el nombre de la rama antes de subirla. Se puede omitir con el atributo --no-verify, pero aún así la rama no pasa la validación del Pull Request.
+   ```bash
+   git config core.hooksPath .githooks
+   ```
 
-     >[!NOTE]
-     >
-     >Para Windows funciona igual, ya que Git incluye su propio entorno POSIX para el SO.
-     >El repositorio incluye un `.gitattributes` **(se superpone sobre la configuración local del clon)** que fuerza LF (lline field) en los scripts --> **Ver en [.gitattributes](.gitattributes)**.
-     
+   .githooks contiene el hook [pre-push](.githooks/pre-push), encargado de validar el nombre de la rama antes de subirla. Se puede omitir con el atributo --no-verify, pero aún así la rama no pasa la validación del Pull Request.
+
+   > [!NOTE]
+   >
+   > Para Windows funciona igual, ya que Git incluye su propio entorno POSIX para el SO.
+   > El repositorio incluye un `.gitattributes` **(se superpone sobre la configuración local del clon)** que fuerza LF (lline field) en los scripts --> **Ver en [.gitattributes](.gitattributes)**.
+
 3. Limpiar las referencias de ramas borradas
-      Finalmente, ejecute el comando:
 
-      ```bash
-      git config --global fetch.prune true
-      ```
+   Finalmente, ejecute el comando:
 
-      Se encarga de que, al fusionar un Pull Request, la rama desaparezca del servidor, con el clon conservando su referencia de seguimiento `(origin/rama)`. Va acumulando archivos dentro de `.git/refs/remotes/` y `.git/logs/refs/remotes/`.
+   ```bash
+   git config --global fetch.prune true
+   ```
 
-      Ahora, cada `fetch` y `pull` eliminan por su cuenta las referencias cuya rama ya no existe en el servidor.
+   Se encarga de que, al fusionar un Pull Request, la rama desaparezca del servidor, con el clon conservando su referencia de seguimiento `(origin/rama)`. Va acumulando archivos dentro de `.git/refs/remotes/` y `.git/logs/refs/remotes/`.
 
-</details>
-
-</details>
+   Ahora, cada `fetch` y `pull` eliminan por su cuenta las referencias cuya rama ya no existe en el servidor.
 
 ---
 
-<details open>
-<summary><h2 id="title2">2. Ramas del proyecto</h2></summary>
+## 2. Ramas del proyecto
 
 Para garantizar la integridad del proyecto, se han creado dos ramas principales de trabajo, a las que se suman las ramas de los contribuidores.
 
@@ -164,7 +124,7 @@ flowchart TB
 
     M((MAIN))
     D((DEV))
-	M --> D
+    M --> D
 
     %% MAIN — arriba
     subgraph MAIN["main"]
@@ -245,12 +205,9 @@ Cada contribuidor debe trabajar sobre su propia rama de desarrollo y seguir la n
 >
 > Se debe mantener una única rama de desarrollo activa por contribuidor para evitar problemas de sincronización con `dev`.
 
-</details>
-
 ---
 
-<details open>
-<summary><h2 id="title3">3. Flujo de trabajo diario</h2></summary>
+## 3. Flujo de trabajo diario
 
 Los conflictos de merge pueden aparecer durante el desarrollo, especialmente cuando varios contribuidores modifican partes relacionadas del proyecto. Un flujo de trabajo ordenado ayuda a reducir su aparición y facilita su resolución.
 
@@ -317,7 +274,7 @@ Desde GitHub, crea un Pull Request desde tu rama de desarrollo hacia `dev`.
 
 Evita generar una gran cantidad de commits innecesarios antes del Pull Request, ya que esto dificulta la revisión y puede aumentar el tiempo necesario para realizar correcciones.
 
-<img src="docs/assets/github_pull_request.png" alt="Ejemplo de un pull request" width="1000" height="900"/>
+![Ejemplo de un pull request](docs/assets/github_pull_request.png)
 
 ### 8. Revisión en `dev`
 
@@ -335,12 +292,9 @@ La aprobación final de este Pull Request corresponde al propietario del reposit
 
 No es necesario, eso ya está cubierto por la configuración previa del clon.
 
-</details>
-
 ---
 
-<details open>
-<summary><h2 id="title4">4. Resolver un conflicto de merge</h2></summary>
+## 4. Resolver un conflicto de merge
 
 Los conflictos de merge es probablemente la característica más molesta, pero con los cuidados correctos, son una de las maravillas dentro del software.
 
@@ -365,18 +319,15 @@ git switch [rama-local]
 git merge dev
 ```
 
->[!WARNING]
+> [!WARNING]
 >
->Si fuiste capaz de tal atrocidad con el flujo actual de trabajo, te aconsejo que apagues las pantallas y salgas afuera a tomar aire libre sin dispositivos electrónicos durante 10 minutos, ¡esa dopamina y cortisol están por las nubes!
+> Si fuiste capaz de tal atrocidad con el flujo actual de trabajo, te aconsejo que apagues las pantallas y salgas afuera a tomar aire libre sin dispositivos electrónicos durante 10 minutos, ¡esa dopamina y cortisol están por las nubes!
 
 ATT: Esto no fue escrito por AI, todo es trabajo casero, como en los tiempos de mi abuelo con stack de C, C++, WebAssembly y Fortran; con una caja fuerte de 256mb de RAM y una TTY de GNU.
 
-</details>
-
 ---
 
-<details open>
-<summary><h2 id="title5">5. Nomenclatura de commits y ramas</h2></summary>
+## 5. Nomenclatura de commits y ramas
 
 La nomenclatura permite identificar rápidamente el propósito de una rama o commit.
 
@@ -419,13 +370,13 @@ El timestamp lleva la fecha correspondiente: `[mes][día][año]`, por ejemplo:
 Misitox37/08302026
 ```
 
->[!EXCEPTION]
+> [!IMPORTANT]
 >
->Solo se puede nombrar así a una rama, que será trabajada en local con fines de experimentación, pero que no puede subirse a dev:
+> Solo se puede nombrar así a una rama, que será trabajada en local con fines de experimentación, pero que no puede subirse a dev:
 >
->```text
->experiment/local-changes
->```
+> ```text
+> experiment/local-changes
+> ```
 
 ### Prohibido usar nombres de archivo en las ramas
 
@@ -452,19 +403,13 @@ El script [check-branch-name.sh](scripts/check-branch-name.sh) valida el nombre 
 1. Antes de cada `push`, en `.githooks/pre-push`
 2. En cada Pull Request, en `.github/workflows/branch-name.yml`
 
-</details>
-
 ---
 
-<details open>
-<summary><h2 id="title6">6. Documentación del proyecto</h2></summary>
+## 6. Documentación del proyecto
 
->[!NOTE]
+> [!NOTE]
 >
 > Pendiente de documentación.
 
-</details>
-
 ---
 Make by: Mateo Gallegos (Misitox37).
-
