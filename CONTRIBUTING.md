@@ -7,9 +7,9 @@ Además, se incluye una guía para el manejo de la documentación del proyecto.
 ## Índice
 
 <details>
-<summary><a href="#title1">1. Configuración de cuenta de Git</a></summary>
+<summary><a href="#title1">1. Configuración del directorio local</a></summary>
 
-* Recomedación del manejo de una cuenta de git, priorizando las configuraciones locales.
+* Configuración del entorno local y recomendación del manejo de una cuenta de git.
 
 </details>
 
@@ -54,20 +54,24 @@ Además, se incluye una guía para el manejo de la documentación del proyecto.
 ---
 
 <details open>
-<summary><h2 id="title1">1. Configuración de cuenta de Git</h2></summary>
+<summary><h2 id="title1">1. Configuración del espacio de trabajo</h2></summary>
+
+La integración de githooks conlleva ciertas configuraciones que deben ejecutarse por detrás para garantizar un espacio de trabajo funcional. Aquí se explica cómo hacer estos ajustes después de clonar el repositorio.
+
+La falta de estas configuraciones no rompen el proyecto, más no garantiza su correcto funcionamiento; y después de un tiempo, sin avisar verá como aparecen fallos.
 
 Tener una cuenta de Git correctamente configurada es esencial. **Está prohibido cambiar el correo electrónico o el usuario de la configuración global de Git** para cualquiera de los espacios de trabajo utilizados con el repositorio (laptop, desktop, PC, VM, Sandbox, directorio, workspace, environment, etc.).
 
 Para evitar estos problemas, se recomienda utilizar una **configuración local**, de modo que la cuenta de Git pueda configurarse específicamente para cada repositorio o espacio de trabajo.
+
+<details>
+<summary>Configurar cuenta de Git</summary>
 
 > [!IMPORTANT]
 >
 > Si configuras una cuenta de Git a nivel local, esta tendrá prioridad sobre las configuraciones globales y de sistema.
 >
 > **Prioridad:** `local > global > system`
-
-<details>
-<summary>Configurar cuenta de Git</summary>
 
 ### Configuración local — recomendada
 
@@ -103,6 +107,47 @@ git config --global user.email "user@gmail.com"
 
 </details>
 
+<details open>
+
+<summary>Configurar el clon</summary>
+
+1. Clonar el repositorio dentro de un directorio:
+
+     ```bash
+     mkdir templateX
+     cd teplateX
+     ```
+     Luego:
+     ```bash
+     git init
+     git remote add origin https://github.com/heizeisaburou/templatex.git
+     ```
+    
+2. Activar los hooks
+
+     ```bash
+     git config core.hooksPath .githooks
+     ```
+     .githooks contiene el hook [pre-push](pre-push), encargado de validar el nombre de la rama antes de subirla. Se puede omitir con el atributo --no-verify, pero aún así la rama no pasa la validación del Pull Request.
+
+     >[!NOTE]
+     >
+     >Para Windows funciona igual, ya que Git incluye su propio entorno POSIX para el SO.
+     >El repositorio incluye un `.gitattributes` **(se superpone sobre la configuración local del clon)** que fuerza LF (lline field) en los scripts --> **Ver en [.gitattributes](.gitattributes)**.
+     
+3. Limpiar las referencias de ramas borradas
+      Finalmente, ejecute el comando:
+
+      ```bash
+      git config --global fetch.prune true
+      ```
+
+      Se encarga de que, al fusionar un Pull Request, la rama desaparezca del servidor, con el clon conservando su referencia de seguimiento `(origin/rama)`. Va acumulando archivos dentro de `.git/refs/remotes/` y `.git/logs/refs/remotes/`.
+
+      Ahora, cada `fetch` y `pull` eliminan por su cuenta las referencias cuya rama ya no existe en el servidor.
+
+</details>
+
 </details>
 
 ---
@@ -118,8 +163,8 @@ Trabajar con varias ramas en Git puede parecer complicado. Sin embargo, siguiend
 flowchart TB
 
     M((MAIN))
-    O((ORIGEN))
-	M --> O
+    D((DEV))
+	M --> D
 
     %% MAIN — arriba
     subgraph MAIN["main"]
@@ -127,45 +172,45 @@ flowchart TB
         M1((●)) --> M2((●)) --> M3((●))
     end
 
-    %% STAGE — segunda capa
-    subgraph STAGE["stage"]
+    %% DEV — segunda capa
+    subgraph DEV["dev"]
         direction LR
-        S1((●)) --> S2((●)) --> S3((●))
+        D1((●)) --> D2((●)) --> D3((●))
     end
 
-    %% DEVELOPERS — abajo
-    subgraph DEVELOPERS["developers"]
+    %% CONTRIB BRANCHES — abajo
+    subgraph CONTRIB BRANCHES["contrib-branches"]
         direction TB
 
-        subgraph DEV1["dev-1"]
+        subgraph CTBR1["ctbr-1"]
             direction LR
-            D1_1((●)) --> D1_2((●)) --> D1_3((●)) --> D1_4((●))
+            C1_1((●)) --> C1_2((●)) --> C1_3((●)) --> C1_4((●))
         end
 
-        subgraph DEV2["dev-2"]
+        subgraph CTBR2["ctbr-2"]
             direction LR
-            D2_1((●)) --> D2_2((●)) --> D2_3((●)) --> D2_4((●))
+            C2_1((●)) --> C2_2((●)) --> C2_3((●)) --> C2_4((●))
         end
 
-        subgraph DEV3["dev-3"]
+        subgraph CTBR3["ctbr-3"]
             direction LR
-            D3_1((●)) --> D3_2((●)) --> D3_3((●)) --> D3_4((●))
+            C3_1((●)) --> C3_2((●)) --> C3_3((●)) --> C3_4((●))
         end
     end
 
     %% ÚNICO ORIGEN
-    O --> D1_1
-    O --> D2_1
-    O --> D3_1
+    D --> C1_1
+    D --> C2_1
+    D --> C3_1
 
     %% DEV → STAGE
-    D1_3 --> S1
-    D2_2 --> S2
-    D3_3 --> S3
+    C1_3 --> D1
+    C2_2 --> D2
+    C3_3 --> D3
 
     %% STAGE → MAIN
-    S2 --> M1
-    S3 --> M2
+    D2 --> M1
+    D3 --> M2
 ```
 
 ### `main`
@@ -174,21 +219,21 @@ La rama `main` contiene el código considerado estable del proyecto.
 
 No se debe trabajar directamente sobre esta rama.
 
-### `stage`
+### `dev`
 
-La rama `stage` funciona como puente entre las ramas de desarrollo y `main`.
+La rama `dev` funciona como puente entre las ramas de desarrollo y `main`.
 
 Su objetivo es proporcionar una rama previa a `main` donde se puedan revisar y validar los cambios antes de incorporarlos a la rama principal.
 
-Los cambios provenientes de una rama de desarrollo deben llegar a `stage` mediante un **Pull Request**.
+Los cambios provenientes de una rama de desarrollo deben llegar a `dev` mediante un **Pull Request**.
 
-Una vez que los cambios hayan sido revisados y aprobados por los miembros del proyecto, `stage` podrá incorporarse a `main` mediante otro **Pull Request**.
+Una vez que los cambios hayan sido revisados y aprobados por los miembros del proyecto, `dev` podrá incorporarse a `main` mediante otro **Pull Request**.
 
 > [!WARNING]
 >
 > Está prohibido enviar un Pull Request directamente desde una rama de desarrollo hacia `main` o realizar `push` directamente sobre `main`, incluso si se es el propietario del repositorio.
 >
-> El incumplimiento de esta norma será sancionado de acuerdo con las reglas del proyecto.
+> El incumplimiento de esta norma será sancionado de acuerdo con las reglas del proyecto **EXPUESTAS EN JIRA**.
 
 ### Ramas de desarrollo
 
@@ -198,7 +243,7 @@ Cada contribuidor debe trabajar sobre su propia rama de desarrollo y seguir la n
 
 > [!IMPORTANT]
 >
-> Se debe mantener una única rama de desarrollo activa por contribuidor para evitar problemas de sincronización con `stage`.
+> Se debe mantener una única rama de desarrollo activa por contribuidor para evitar problemas de sincronización con `dev`.
 
 </details>
 
@@ -211,31 +256,31 @@ Los conflictos de merge pueden aparecer durante el desarrollo, especialmente cua
 
 ### 1. Actualizar las ramas locales
 
-Antes de comenzar a trabajar, actualiza las ramas `main` y `stage` respecto al repositorio remoto:
+Antes de comenzar a trabajar, actualiza las ramas `main` y `dev` respecto al repositorio remoto:
 
 ```bash
 git switch main
 git pull origin main
 
-git switch stage
-git pull origin stage
+git switch dev
+git pull origin dev
 ```
 
 ### 2. Crear una rama de desarrollo
 
-Crea una nueva rama a partir de `stage` y cambia a ella.
+Crea una nueva rama a partir de `dev` y cambia a ella.
 
 El nombre debe utilizar **kebab-case** y seguir la nomenclatura establecida en esta guía.
 
 ```bash
-git switch stage
-git switch -c "categoría/propósito"
+git switch dev
+git switch -c "autor/timestamp"
 ```
 
 Por ejemplo:
 
 ```bash
-git switch -c "fix/corregir-validacion"
+git switch -c "Misitox37/08302026"
 ```
 
 ### 3. Realizar los cambios
@@ -255,7 +300,7 @@ git add .
 Crea un commit siguiendo la nomenclatura establecida:
 
 ```bash
-git commit -m "categoría: problema tratado"
+git commit -m "categoría/propósito"
 ```
 
 ### 6. Subir la rama al repositorio
@@ -266,38 +311,29 @@ Sube la rama al repositorio remoto:
 git push -u origin [rama]
 ```
 
-### 7. Crear el Pull Request hacia `stage`
+### 7. Crear el Pull Request hacia `dev`
 
-Desde GitHub, crea un Pull Request desde tu rama de desarrollo hacia `stage`.
+Desde GitHub, crea un Pull Request desde tu rama de desarrollo hacia `dev`.
 
 Evita generar una gran cantidad de commits innecesarios antes del Pull Request, ya que esto dificulta la revisión y puede aumentar el tiempo necesario para realizar correcciones.
 
 <img src="docs/assets/github_pull_request.png" alt="Ejemplo de un pull request" width="1000" height="900"/>
 
-### 8. Revisión en `stage`
+### 8. Revisión en `dev`
 
 Una vez creado el Pull Request, los cambios serán revisados por los miembros del proyecto.
 
 Si aparecen conflictos de merge, deberán resolverse antes de completar el Pull Request.
 
-### 9. Pull Request de `stage` hacia `main`
+### 9. Pull Request de `dev` hacia `main`
 
-Una vez que los cambios hayan sido aprobados e integrados en `stage`, se podrá realizar un Pull Request desde `stage` hacia `main`.
+Una vez que los cambios hayan sido aprobados e integrados en `dev`, se podrá realizar un Pull Request desde `dev` hacia `main`.
 
 La aprobación final de este Pull Request corresponde al propietario del repositorio.
 
 ### 10. Eliminar la rama de desarrollo
 
-Una vez completado el trabajo, cambia a `stage` y elimina la rama de desarrollo local:
-
-```bash
-git switch stage
-git branch -d [rama]
-```
-
-> [!IMPORTANT]
->
-> Nunca elimines una rama mientras estés situado sobre ella.
+No es necesario, eso ya está cubierto por la configuración previa del clon.
 
 </details>
 
@@ -308,14 +344,32 @@ git branch -d [rama]
 
 Los conflictos de merge es probablemente la característica más molesta, pero con los cuidados correctos, son una de las maravillas dentro del software.
 
-Dentro del repositorio, los merge conflicts pueden darse en stage, más no en main, siempre y cuando el administrador no haga push directo a main,
-ya que al momento de hacer un pull request desde stage, los merge conflicts aparece.
+Dentro del repositorio, los merge conflicts pueden darse en dev, más no en main, siempre y cuando el administrador no haga push directo a main,
+ya que al momento de hacer un pull request desde dev, los merge conflicts aparece.
 
-Sí se presenta un merge conflict, la decisión se debate entre el autor del anterior commit y el actual (obviamente después de que se haya aprovado la inclusión del commit en stage),
-teniendo en cuenta los siguientes parámetros:
+Sí se presenta un merge conflict, la decisión se debate entre el autor del anterior commit y el actual (obviamente después de que se haya aprovado la inclusión del commit en dev), sí el administrador de la sprint lo aprueba, y teniendo en cuenta los siguientes parámetros:
 - si es el mismo autor, el tiene total protestad sobre la resolución del los conflicts.
 - en caso de no llegar a un acuerdo, el tercer contribuidor tiene la decisión final.
 - en caso de que exista la ausencia del voto del tercer contribuidor, el anterior commit tiene prioridad sobre el actual.
+
+Caso contrario, el administrador de la sprint es el que toma la decisión.
+
+### Resolver una rama desactualizada
+
+En adición a los merge conflicts, se presenta el caso donde una rama local quedó desactualizada respecto al origin de la rama `dev`. En este caso, se procede a ejecutar los siguientes comandos:
+
+```bash
+git switch dev
+git pull origin dev
+git switch [rama-local]
+git merge dev
+```
+
+>[!WARNING]
+>
+>Si fuiste capaz de tal atrocidad con el flujo actual de trabajo, te aconsejo que apagues las pantallas y salgas afuera a tomar aire libre sin dispositivos electrónicos durante 10 minutos, ¡esa dopamina y cortisol están por las nubes!
+
+ATT: Esto no fue escrito por AI, todo es trabajo casero, como en los tiempos de mi abuelo con stack de C, C++, WebAssembly y Fortran; con una caja fuerte de 256mb de RAM y una TTY de GNU.
 
 </details>
 
@@ -326,7 +380,7 @@ teniendo en cuenta los siguientes parámetros:
 
 La nomenclatura permite identificar rápidamente el propósito de una rama o commit.
 
-Tanto los commits como las ramas deben utilizar el siguiente formato:
+Los commits deben utilizar el siguiente formato:
 
 ```text
 categoría/propósito
@@ -342,7 +396,7 @@ docs/actualizar-guia
 refactor/simplificar-función
 ```
 
-Solo se puede nombrar así a un commit, ya que este se crea desde stage, y debe ser autorizado por todo el equipo:
+Solo se puede nombrar así a un commit, ya que este se crea desde dev, y debe ser autorizado por todo el equipo:
 
 ```text
 hotfix/corregir-en-caliente 
@@ -354,15 +408,26 @@ Commit preparado para una versión/lanzamiento oficial, debe ser autorizado por 
 release/v11.00
 ```
 
-Solo se puede nombrar así a una rama, que será trabajada en local con fines de experimentación, pero que no puede subirse a stage:
+La nomenclatura para las ramas es simple, siendo el nombre del autor, acompañado de un timestamp:
 
 ```text
-experiment/local-changes
+autor/timestamp
+```
+El timestamp lleva la fecha correspondiente: `[mes][día][año]`, por ejemplo:
+
+```
+Misitox37/08302026
 ```
 
-### Prohibido usar nombres de archivo en las ramas
+>[!EXCEPTION]
+>
+>Solo se puede nombrar así a una rama, que será trabajada en local con fines de experimentación, pero que no puede subirse a dev:
+>
+>```text
+>experiment/local-changes
+>```
 
-El nombre de una rama **no puede contener un punto**. La única excepción es `release/`, cuyos nombres llevan versión: `release/v11.00`.
+### Prohibido usar nombres de archivo en las ramas
 
 Git materializa el nombre de la rama como un archivo real dentro de `.git/refs` y `.git/logs/refs`. Una rama llamada `fix/parser.go` crea archivos acabados en `.go` que no son código Go, y cualquier herramienta que recorra el repositorio por extensión intenta parsearlos: `gofmt -l .` falla con `expected 'package'` sobre una referencia de Git.
 
@@ -380,8 +445,12 @@ Para comprobar un nombre a mano:
 sh scripts/check-branch-name.sh feat/agregar-validacion
 ```
 
-El resto de ajustes que hay que hacer una vez por clon está en
-[docs/configuracion-del-clon.md](docs/configuracion-del-clon.md).
+### Compraciones automáticas
+
+El script [check-branch-name.sh](scripts/check-branch-name.sh) valida el nombre de las ramas durante dos eventos:
+
+1. Antes de cada `push`, en `.githooks/pre-push`
+2. En cada Pull Request, en `.github/workflows/branch-name.yml`
 
 </details>
 
@@ -395,4 +464,7 @@ El resto de ajustes que hay que hacer una vez por clon está en
 > Pendiente de documentación.
 
 </details>
+
+---
+Make by: Mateo Gallegos (Misitox37).
 
