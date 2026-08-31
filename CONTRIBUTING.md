@@ -32,7 +32,7 @@ Para evitar estos problemas, se recomienda utilizar una **configuración local**
 
 ### Configurar cuenta de Git
 
-> [!IMPORTANT]
+> [!TIP]
 >
 > Si configuras una cuenta de Git a nivel local, esta tendrá prioridad sobre las configuraciones globales y de sistema.
 >
@@ -92,7 +92,7 @@ git config --global user.email "user@gmail.com"
    git config core.hooksPath .githooks
    ```
 
-   .githooks contiene el hook [pre-push](pre-push), encargado de validar el nombre de la rama antes de subirla. Se puede omitir con el atributo --no-verify, pero aún así la rama no pasa la validación del Pull Request.
+   .githooks contiene el hook [pre-push](.githooks/pre-push), encargado de validar el nombre de la rama antes de subirla. Se puede omitir con el atributo --no-verify, pero aún así la rama no pasa la validación del Pull Request.
 
    > [!NOTE]
    >
@@ -370,7 +370,7 @@ El timestamp lleva la fecha correspondiente: `[mes][día][año]`, por ejemplo:
 Misitox37/08302026
 ```
 
-> [!EXCEPTION]
+> [!IMPORTANT]
 >
 > Solo se puede nombrar así a una rama, que será trabajada en local con fines de experimentación, pero que no puede subirse a dev:
 >
